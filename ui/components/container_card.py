@@ -33,7 +33,7 @@ class ContainerCard(ctk.CTkFrame):
         )
         dot_label.grid(row=0, column=0, padx=(10, 2), pady=6, sticky="w")
 
-        # 1. Name & Container ID badge (just like Docker Desktop)
+        # 1. Name & Container ID badge (clickable to copy to clipboard)
         info_frame = ctk.CTkFrame(self, fg_color="transparent")
         info_frame.grid(row=0, column=1, padx=6, pady=6, sticky="w")
 
@@ -45,18 +45,20 @@ class ContainerCard(ctk.CTkFrame):
         )
         name_label.pack(side="left")
 
-        # Container ID Badge
-        id_badge = ctk.CTkLabel(
+        # Container ID Button (Click para copiar)
+        self.id_btn = ctk.CTkButton(
             info_frame,
-            text=self.short_id,
+            text=f"📋 {self.short_id}",
             font=ctk.CTkFont(family="Consolas", size=11),
             text_color="#94a3b8",
             fg_color="#0f172a",
+            hover_color="#1e293b",
             corner_radius=4,
-            padx=6,
-            pady=1
+            height=22,
+            width=80,
+            command=self._copy_id_to_clipboard
         )
-        id_badge.pack(side="left", padx=(8, 0))
+        self.id_btn.pack(side="left", padx=(8, 0))
 
         img_label = ctk.CTkLabel(
             info_frame,
@@ -192,6 +194,20 @@ class ContainerCard(ctk.CTkFrame):
             command=lambda: self.on_action("delete", self.container_id)
         )
         btn_del.pack(side="left", padx=2)
+
+    def _copy_id_to_clipboard(self):
+        """Copia el ID completo o corto al portapapeles y da feedback visual inmediato."""
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(self.short_id)
+            self.update() # necesario para procesar el portapapeles en Tkinter
+
+            # Feedback visual
+            original_text = f"📋 {self.short_id}"
+            self.id_btn.configure(text="✓ Copiado!", fg_color="#065f46", text_color="#34d399")
+            self.after(1400, lambda: self.id_btn.configure(text=original_text, fg_color="#0f172a", text_color="#94a3b8"))
+        except Exception:
+            pass
 
     def _open_port(self, port_str: str):
         try:
